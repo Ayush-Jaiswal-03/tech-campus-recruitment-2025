@@ -22,7 +22,7 @@ void processChunk(const std::string& logFilePath, const std::string& date,
     std::string line;
     std::vector<std::string> buffer; // to store the result in a buffer (before writing it to the disk)
 
-    // Process each line within the assigned range
+    // Process each line
     while (logFile.tellg() < end && std::getline(logFile, line)) {
         if (line.find(date) == 0) { 
             buffer.push_back(line);
