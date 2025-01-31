@@ -7,9 +7,9 @@
 #include <filesystem>
 
 namespace fs = std::filesystem;
-std::mutex outputMutex;  // Ensures thread-safe writing
+std::mutex outputMutex; 
 
-// Function to process a chunk of the log file
+// processes a part of the log file
 void processChunk(const std::string& logFilePath, const std::string& date, 
                   std::streampos start, std::streampos end, const std::string& outputFilePath) {
     std::ifstream logFile(logFilePath, std::ios::in);
@@ -18,20 +18,20 @@ void processChunk(const std::string& logFilePath, const std::string& date,
         return;
     }
 
-    logFile.seekg(start); // Move to the chunk's start position
+    logFile.seekg(start); // moves the chunk to the start ( so that we can process it) explanation in extractLogs function
     std::string line;
-    std::vector<std::string> buffer; // Store results in a buffer before writing to disk
+    std::vector<std::string> buffer; // to store the result in a buffer (before writing it to the disk)
 
     // Process each line within the assigned range
     while (logFile.tellg() < end && std::getline(logFile, line)) {
-        if (line.find(date) == 0) {  // Fast string match (logs start with date)
+        if (line.find(date) == 0) { 
             buffer.push_back(line);
         }
     }
 
     logFile.close();
 
-    // Write results to file with thread-safe access
+    // writes the result to the file
     std::lock_guard<std::mutex> lock(outputMutex);
     std::ofstream outputFile(outputFilePath, std::ios::app);
     for (const std::string& logLine : buffer) {
@@ -40,7 +40,8 @@ void processChunk(const std::string& logFilePath, const std::string& date,
     outputFile.close();
 }
 
-// Function to divide the file into chunks and process them in parallel
+// here we want to process the chunks in parallel
+// this function divides the file into chunks 
 void extractLogsForDate(const std::string& logFilePath, const std::string& date, int numThreads) {
     std::ifstream logFile(logFilePath, std::ios::ate | std::ios::binary);
     if (!logFile) {
@@ -48,10 +49,9 @@ void extractLogsForDate(const std::string& logFilePath, const std::string& date,
         return;
     }
 
-    std::streampos fileSize = logFile.tellg(); // Get file size
+    std::streampos fileSize = logFile.tellg(); // to get file size
     logFile.close();
 
-    // Create the output directory if it doesn't exist
     std::string outputDir = "output";
     if (!fs::exists(outputDir)) {
         fs::create_directory(outputDir);
@@ -59,7 +59,7 @@ void extractLogsForDate(const std::string& logFilePath, const std::string& date,
 
     std::string outputFilePath = outputDir + "/output_" + date + ".txt";
 
-    // Divide file into chunks
+    // divides files into chunks 
     std::vector<std::thread> threads;
     std::streampos chunkSize = fileSize / numThreads;
     
@@ -67,12 +67,14 @@ void extractLogsForDate(const std::string& logFilePath, const std::string& date,
         std::streampos start = i * chunkSize;
         std::streampos end = (i == numThreads - 1) ? fileSize : (i + 1) * chunkSize;
 
-        // Adjust start position to the beginning of a line
+        // adjusting the starting position 
+        // moving the pointer to the start of the file because the chunk to be processed is 
+        // placed in the beginning of the file
         if (i > 0) {
             std::ifstream logFile(logFilePath);
             logFile.seekg(start);
             std::string temp;
-            std::getline(logFile, temp); // Move to the next line start
+            std::getline(logFile, temp); 
             start = logFile.tellg();
         }
 
@@ -92,7 +94,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::string logFilePath = argv[1];  // Specify the log file path in the root directory
+    std::string logFilePath = argv[1];  // Specifying the log file path in the root directory
     std::string date = argv[2];
     int numThreads = std::stoi(argv[3]);
 
