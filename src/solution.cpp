@@ -1,9 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <thread>
+#include <thread> // for parallel programming
 #include <vector>
-#include <mutex>
+#include <mutex> // to apply locks (helps avoid inconsistency)
 #include <filesystem>
 
 namespace fs = std::filesystem;
