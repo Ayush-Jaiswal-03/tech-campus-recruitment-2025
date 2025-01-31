@@ -9,7 +9,7 @@
 namespace fs = std::filesystem;
 std::mutex outputMutex; 
 
-// this function processes a part of the log file
+// this function processes a part of the log file 
 void processChunk(const std::string& logFilePath, const std::string& date, 
                   std::streampos start, std::streampos end, const std::string& outputFilePath) {
     std::ifstream logFile(logFilePath, std::ios::in);
