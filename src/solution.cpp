@@ -32,6 +32,7 @@ void processChunk(const std::string& logFilePath, const std::string& date,
     logFile.close();
 
     // writes the result to the file
+    // applies a lock to the file to avoid inconsitency
     std::lock_guard<std::mutex> lock(outputMutex);
     std::ofstream outputFile(outputFilePath, std::ios::app);
     for (const std::string& logLine : buffer) {
